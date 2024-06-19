@@ -223,6 +223,18 @@ def load_data(
     if include_test:
       testset = DIODE(dataroot=root, train=False, img_size= image_size,
                                 random_crop=False, random_flip=False)
+  elif dataset == 'mvtv':
+
+    from .aligned_dataset import MVTV
+    trainset = MVTV(dataroot=root, train=True, img_size=image_size,
+                                random_crop=True, random_flip=True)
+
+    valset = MVTV(dataroot=root, train=True, img_size=image_size,
+                                random_crop=False, random_flip=False)
+
+    if include_test:
+      testset = MVTV(dataroot=root, train=False, img_size= image_size,
+                                random_crop=False, random_flip=False)
 
   
   loader = DataLoader(

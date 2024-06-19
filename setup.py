@@ -17,7 +17,6 @@ setup(
         "lmdb",
         "clip @ git+https://github.com/openai/CLIP.git",
         "mpi4py",
-        "flash-attn==2.0.4",
         "pillow",
         "wandb",
         'omegaconf',

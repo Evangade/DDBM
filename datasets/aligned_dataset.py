@@ -2,7 +2,6 @@ import os.path
 import torch
 import random
 import numpy as np
-import torchvision.transforms as transforms
 from .image_folder import make_dataset
 from PIL import Image
 
@@ -10,6 +9,7 @@ import torchvision
 import blobfile as bf
 
 from glob import glob
+from torchvision import transforms
 
 def get_params( size,  resize_size,  crop_size):
     w, h = size
@@ -231,3 +231,93 @@ class DIODE(torch.utils.data.Dataset):
             return len(self.filenames)
     
 
+
+class MVTV(torch.utils.data.Dataset):
+    """A dataset class for paired image dataset."""
+
+    def __init__(self, dataroot, train=True, img_size=256, random_crop=False, random_flip=True, random_transform=True):
+        """Initialize this dataset class.
+        Parameters:
+            dataroot (str) -- path to the root of the dataset
+            train (bool) -- if True, create the dataset from the train set, otherwise from the val set
+            img_size (int) -- the size to which the images are resized
+            random_crop (bool) -- whether to randomly crop the images
+            random_flip (bool) -- whether to randomly flip the images
+        """
+        super().__init__()
+        self.image_root = os.path.join(dataroot, 'train' if train else 'val')
+        self.crop_size = img_size
+        self.resize_size = img_size
+        self.random_crop = random_crop
+        self.random_flip = random_flip
+        self.train = train
+        self.random_transform = random_transform
+
+        # Filenames for Infrared and Visible images
+        self.infrared_root = os.path.join(self.image_root, 'Infrared')
+        self.visible_root = os.path.join(self.image_root, 'Visible')
+        self.filenames = [os.path.splitext(f)[0] for f in os.listdir(self.infrared_root) if not f.endswith('.pth')]
+
+        # Define transformations
+        self.resize_transform = transforms.Resize((img_size, img_size))
+        self.to_tensor = transforms.ToTensor()
+
+    def __getitem__(self, index):
+        """Return a data point and its metadata information.
+        Parameters:
+            index - - a random integer for data indexing
+        Returns a dictionary that contains infrared, visible, infrared_paths and visible_paths
+            infrared (tensor) - - an image in the infrared domain
+            visible (tensor) - - its corresponding image in the visible domain
+            infrared_paths (str) - - image paths
+            visible_paths (str) - - image paths (same as infrared_paths)
+        """
+        fn = self.filenames[index]
+        infrared_path = os.path.join(self.infrared_root, fn + '.JPG')
+        visible_path = os.path.join(self.visible_root, fn + '.JPG')
+
+        infrared_image = Image.open(infrared_path).convert("RGB")
+        visible_image = Image.open(visible_path).convert("RGB")
+
+        # Apply the same common transform to both infrared and visible images
+        infrared_image = self.resize_transform(infrared_image)
+        visible_image = self.resize_transform(visible_image)
+
+        if self.train and self.random_transform:
+            # Apply the same random transformations to both images
+            seed = random.randint(0, 2**32)
+            random.seed(seed)
+            torch.manual_seed(seed)
+            infrared_image = self._apply_transforms(infrared_image)
+            random.seed(seed)
+            torch.manual_seed(seed)
+            visible_image = self._apply_transforms(visible_image)
+
+        # Convert PIL images to tensors
+        infrared_image = self.to_tensor(infrared_image)
+        visible_image = self.to_tensor(visible_image)
+
+        # return {'infrared': infrared_image, 'visible': visible_image, 'infrared_paths': infrared_path, 'visible_paths': visible_path}
+        if not self.train:
+            return infrared_image, visible_image, index, fn
+        else: 
+            return infrared_image, visible_image, index
+
+    def __len__(self):
+        """Return the total number of images in the dataset."""
+        return len(self.filenames)
+
+    def _apply_transforms(self, image):
+        """Apply random transformations to the image."""
+        if self.random_flip and random.random() > 0.5:
+            image = transforms.functional.hflip(image)
+
+        if self.random_crop:
+            i, j, h, w = transforms.RandomCrop.get_params(image, output_size=(self.crop_size, self.crop_size))
+            image = transforms.functional.crop(image, i, j, h, w)
+
+        image = transforms.functional.rotate(image, angle=random.uniform(-10, 10))
+        color_jitter = transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1)
+        image = color_jitter(image)
+
+        return image

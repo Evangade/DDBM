@@ -3,7 +3,8 @@ Train a diffusion model on images.
 """
 
 import argparse
-
+import os
+import numpy as np
 from ddbm import dist_util, logger
 from datasets import load_data
 from ddbm.resample import create_named_schedule_sampler
@@ -21,11 +22,12 @@ import torch.distributed as dist
 
 from pathlib import Path
 
-import wandb
-import numpy as np
+#import wandb
+#os.environ["WANDB_MODE"] = "offline"
+#os.environ["WANDB_API_KEY"] = "KEY"
 
 from glob import glob
-import os
+
 from datasets.augment import AugmentPipe
 def main(args):
 
@@ -36,7 +38,7 @@ def main(args):
     logger.configure(dir=workdir)
     if dist.get_rank() == 0:
         name = args.exp if args.resume_checkpoint == "" else args.exp + '_resume'
-        wandb.init(project="bridge", group=args.exp,name=name, config=vars(args), mode='online' if not args.debug else 'disabled')
+        #wandb.init(project="bridge", group=args.exp,name=name, config=vars(args), mode='online' if not args.debug else 'disabled')
         logger.log("creating model and diffusion...")
     
 
@@ -58,8 +60,8 @@ def main(args):
     )
     model.to(dist_util.dev())
 
-    if dist.get_rank() == 0:
-        wandb.watch(model, log='all')
+    #if dist.get_rank() == 0:
+    #    wandb.watch(model, log='all')
     schedule_sampler = create_named_schedule_sampler(args.schedule_sampler, diffusion)
 
     

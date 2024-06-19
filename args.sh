@@ -1,16 +1,11 @@
-BS=64
-
-
 DATASET_NAME=$1
 PRED=$2
 NGPU=1
-
 
 SIGMA_MAX=80.0
 SIGMA_MIN=0.002
 SIGMA_DATA=0.5
 COV_XY=0
-
 
 NUM_CH=256
 ATTN=32,16,8
@@ -34,6 +29,15 @@ elif [[ $DATASET_NAME == "diode" ]]; then
     SIGMA_MIN=0.0005
 
     EXP="diode${IMG_SIZE}_${NUM_CH}d"
+    SAVE_ITER=20000
+elif [[ $DATASET_NAME == "mvtv" ]]; then
+    DATA_DIR="/home/dayifan/work/Diffusions/MVTV"
+    DATASET=mvtv
+    IMG_SIZE=256
+    SIGMA_MAX=20.0
+    SIGMA_MIN=0.0005
+
+    EXP="mvtv${IMG_SIZE}_${NUM_CH}d"
     SAVE_ITER=20000
 fi
     
@@ -62,11 +66,9 @@ else
     exit 1
 fi
 
-
-
 if [[ $IMG_SIZE == 256 ]]; then
-    BS=16
+    BS=1
 else
-    BS=192
+    BS=1
 fi
 
