@@ -32,9 +32,7 @@ import glob
 # 20-21 within the first ~1K steps of training.
 INITIAL_LOG_LOSS_SCALE = 20.0
 
-#import wandb
-#os.environ["WANDB_MODE"] = "offline"
-#os.environ["WANDB_API_KEY"] = "KEY"
+import wandb
 class TrainLoop:
     def __init__(
         self,
@@ -231,8 +229,8 @@ class TrainLoop:
                 if took_step and self.step % self.log_interval == 0:
                     logs = logger.dumpkvs()
 
-                    #if dist.get_rank() == 0:
-                    #    wandb.log(logs, step=self.step)
+                    if dist.get_rank() == 0:
+                        wandb.log(logs, step=self.step)
                         
                 if took_step and self.step % self.save_interval == 0:
                     self.save()
@@ -249,8 +247,8 @@ class TrainLoop:
                     self.run_test_step(test_batch, test_cond)
                     logs = logger.dumpkvs()
 
-                    #if dist.get_rank() == 0:
-                    #    wandb.log(logs, step=self.step)
+                    if dist.get_rank() == 0:
+                        wandb.log(logs, step=self.step)
                 
 
                 if took_step and self.step % self.save_interval_for_preemption == 0:
