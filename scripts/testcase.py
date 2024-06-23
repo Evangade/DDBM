@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 
 # 假设MVTV类定义在mvtv_dataset.py文件中
-from datasets.aligned_dataset import MVTV
+from datasets.aligned_dataset import LLVIP
 
 def visualize_sample(data, index=0):
     """Visualize a sample from the dataset."""
@@ -24,11 +24,11 @@ def visualize_sample(data, index=0):
 
 def main():
     # 设置数据集根目录
-    dataroot = '/home/dayifan/work/Diffusions/MVTV'
+    dataroot = '/mnt/c/Users/dyf/Downloads/LLVIP'
 
     # 创建训练和验证数据集
-    train_dataset = MVTV(dataroot, train=True, img_size=256, random_crop=True, random_flip=True)
-    val_dataset = MVTV(dataroot, train=False, img_size=256, random_crop=False, random_flip=False)
+    train_dataset = LLVIP(dataroot, train=True, img_size=128, random_crop=True, random_flip=True)
+    val_dataset = LLVIP(dataroot, train=False, img_size=128, random_crop=False, random_flip=False)
 
     # 创建数据加载器
     train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True, num_workers=2)

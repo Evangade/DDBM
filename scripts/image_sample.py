@@ -133,7 +133,7 @@ def main():
             gathered_samples = th.cat(gathered_samples)
 
         num_display = min(32, sample.shape[0])
-        if i == 0 and dist.get_rank() == 0:
+        if dist.get_rank() == 0:
             vutils.save_image(sample.permute(0,3,1,2)[:num_display].float(), f'{sample_dir}/sample_{i}.png', normalize=True,  nrow=int(np.sqrt(num_display)))
             if x0 is not None:
                 vutils.save_image(x0_image[:num_display], f'{sample_dir}/x_{i}.png',nrow=int(np.sqrt(num_display)))

@@ -13,8 +13,8 @@ source ./args.sh $DATASET_NAME $PRED
 
 N=40
 GEN_SAMPLER=heun
-BS=16
-NGPU=4
+BS=1
+NGPU=1
 
 mpiexec -n $NGPU python scripts/image_sample.py --exp=$EXP \
 --batch_size $BS --churn_step_ratio $CHURN_STEP_RATIO --steps $N --sampler $GEN_SAMPLER \
